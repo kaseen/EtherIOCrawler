@@ -35,14 +35,17 @@ export const Main = () => {
 
     const classes = useStyles();
     const [address, setAddress] = useState("0x33Ddd548FE3a082d753E5fE721a26E1Ab43e3598");
+    const [blockNumber, setBlockNumber] = useState(0);
+    const [show, setShow] = useState(false);
     const [listOfTransactions, setListOfTransactions] = useState([]);
 
     const hook = Web3Functions()
 
     // TEST
     // 14802800 -> 14802820
-    const testtest = () => {
-        hook.getBlockByNumber(14802800, address, listOfTransactions, setListOfTransactions);
+    const searchButtonOnClick = () => {
+        setShow(true);
+        hook.getBlockByNumber(blockNumber, address, listOfTransactions, setListOfTransactions, setBlockNumber);
     }  
     
     useEffect(() => {
@@ -56,6 +59,7 @@ export const Main = () => {
                     label=" "
                     helperText="Enter block number"
                     variant="outlined"
+                    onChange={input => setBlockNumber(Number(input.target.value))}
                 />
                 <TextField
                     id="accountAddress"
@@ -66,7 +70,10 @@ export const Main = () => {
                 />
             </Box>
             <Box>
-                <Button className={classes.button} onClick={testtest}>Search</Button>
+                <Button className={classes.button} onClick={searchButtonOnClick}>Search</Button>
+                <br/>
+                {show === true ? typeof(blockNumber) === "number" ? "Currently searching in block no. " + blockNumber : null : null}
+                {typeof(blockNumber) !== "number" ? "Finished" : null}
             </Box>
             <Box>
                 <TableContainer className={classes.table}>
