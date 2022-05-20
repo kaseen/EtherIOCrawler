@@ -5,13 +5,6 @@ import {Web3Functions} from "../hooks/hookWeb3"
 import TablePagination from '@mui/material/TablePagination';
 
 const useStyles = makeStyles(() => ({
-    button: {
-        backgroundColor: '#e66465',
-        borderRadius: '5px',
-        border: '1px solid black',
-        marginTop: '20px',
-        marginBottom: '15px'
-    },
     wrapper: {
         width: '100%',
         display: 'flex',
@@ -19,29 +12,35 @@ const useStyles = makeStyles(() => ({
         alignItems: 'center'
     },
     box: {
-        padding: '40px',
+        width: '700px',
+        height: '80px',
+        display: 'flex',
+        marginTop: '15px',
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+    },
+    searchResult:{
+        height: '20px',
+        width: '500px',
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: '30px',
-        marginBottom: '30px',
-        border: '1px solid black'
-    },
-    searchResult:{
-        height: '150px',
-        width: '500px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: '30px',
-        border: '1px solid black'
+        padding: '10px',
+        marginBottom: '5px',
     },
     table: {
         minWidth: 1000,
         maxWidth: 1000,
-        height: '800px'
+        backgroundColor: 'white',
+        borderRadius: '10px',
+        border: '1px solid black',
+        marginBottom: '10px'
+    },
+    button: {
+        borderRadius: '5px',
+        border: '1px solid black',
+        marginBottom: '24px'
     }
 }))
 
@@ -53,9 +52,12 @@ export const Main = () => {
     const [show, setShow] = useState(false);
     const [result, setResult] = useState(0);
     const [listOfTransactions, setListOfTransactions] = useState([]);
-
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(20);
+
+    const emptyRows = rowsPerPage - Math.min(rowsPerPage, listOfTransactions.length - page * rowsPerPage);
+
+    const hook = Web3Functions();
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -66,16 +68,13 @@ export const Main = () => {
         setPage(0);
     };
 
-    const emptyRows = rowsPerPage - Math.min(rowsPerPage, listOfTransactions.length - page * rowsPerPage);
-
-    const hook = Web3Functions();
-
     // TEST
     // 14802800 -> 14802820
     const searchButtonOnClick = () => {
         setShow(true);
-        // TODO: setListOfTransactions([]);
         hook.getBlockByNumber(setListOfTransactions, setBlockNumber, blockNumber, address, listOfTransactions);
+        setListOfTransactions([]);
+        setBlockNumber(null);
     };
     
     useEffect(() => {
@@ -90,6 +89,7 @@ export const Main = () => {
                     label=" "
                     helperText="Enter block number"
                     variant="outlined"
+                    size="small"
                     onChange={input => setBlockNumber(Number(input.target.value))}
                 />
                 <TextField
@@ -97,16 +97,13 @@ export const Main = () => {
                     label=" "
                     helperText="Enter account address"
                     variant="outlined"
+                    size="small"
                     onChange={input => setAddress(input.target.value)}
                 />
+                <Button className={classes.button} onClick={searchButtonOnClick}>Search</Button>
             </Box>
             <Box className={classes.searchResult}>
-                <Button className={classes.button} onClick={searchButtonOnClick}>Search</Button>
-                <Box style={{height: '20%', textAlign: 'center', marginBottom: '10px'}}>
-                    {show === true ? typeof(blockNumber) === "number" ? "Currently searching in block no. " + blockNumber : null : null}
-                    {typeof(blockNumber) !== "number" ? "Finished" : null}
-                </Box>
-                {result}
+                {show === true ? typeof(blockNumber) === "number" ? "Currently searching in block no. " + blockNumber : "Total of " + result + " transactions." : null}
             </Box>
             <Box>
                 <TableContainer className={classes.table}>
@@ -140,7 +137,7 @@ export const Main = () => {
                         </TableBody>
                     </Table>
                     <TablePagination
-                        rowsPerPageOptions={[5,10,25]}
+                        rowsPerPageOptions={[10,20,50,100]}
                         component="div"
                         count={listOfTransactions.length}
                         rowsPerPage={rowsPerPage}
