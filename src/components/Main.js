@@ -2,6 +2,7 @@ import {Box, Button, TextField, makeStyles} from "@material-ui/core";
 import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
 import {useEffect, useState} from "react";
 import {Web3Functions} from "../hooks/hookWeb3"
+import TablePagination from '@mui/material/TablePagination';
 
 const useStyles = makeStyles(() => ({
     button: {
@@ -40,7 +41,7 @@ const useStyles = makeStyles(() => ({
     table: {
         minWidth: 1000,
         maxWidth: 1000,
-        height: '1000px'
+        height: '800px'
     }
 }))
 
@@ -53,6 +54,20 @@ export const Main = () => {
     const [result, setResult] = useState(0);
     const [listOfTransactions, setListOfTransactions] = useState([]);
 
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
+    
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
+    const emptyRows = rowsPerPage - Math.min(rowsPerPage, listOfTransactions.length - page * rowsPerPage);
+
     const hook = Web3Functions();
 
     // TEST
@@ -61,7 +76,7 @@ export const Main = () => {
         setShow(true);
         // TODO: setListOfTransactions([]);
         hook.getBlockByNumber(setListOfTransactions, setBlockNumber, blockNumber, address, listOfTransactions);
-    }  
+    };
     
     useEffect(() => {
         setResult(listOfTransactions.length);
@@ -104,15 +119,35 @@ export const Main = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {listOfTransactions.map((row) => (
-                                <TableRow key={row.txHash}>
-                                    <TableCell>{row.from}</TableCell>
-                                    <TableCell>{row.to}</TableCell>
-                                    <TableCell>{row.value}</TableCell>
+                            {
+                            listOfTransactions
+                                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                .map((row) => (
+                                    <TableRow key={row.txHash}>
+                                        <TableCell>{row.from}</TableCell>
+                                        <TableCell>{row.to}</TableCell>
+                                        <TableCell>{row.value}</TableCell>
+                                    </TableRow>
+                                ))
+                            }
+                            {
+                            emptyRows > 0 && (
+                                <TableRow style={{height: 33 * emptyRows}}>
+                                    <TableCell colSpan={3}/>
                                 </TableRow>
-                            ))}
+                            )
+                            }
                         </TableBody>
                     </Table>
+                    <TablePagination
+                        rowsPerPageOptions={[5,10,25]}
+                        component="div"
+                        count={listOfTransactions.length}
+                        rowsPerPage={rowsPerPage}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
                 </TableContainer>
             </Box>
         </Box>
