@@ -26,7 +26,7 @@ export const Web3Functions = () => {
         return {txHash, from, to, value};
     }
 
-    const getBlockByNumber = async(n, address, listOfTransactions, setListOfTransactions, setBlockNumber) => {
+    const getBlockByNumber = async(setListOfTransactions, setBlockNumber, n, address, listOfTransactions) => {
         const block = await web3.eth.getBlock(n, true);
    
         if(block === null || block.number === 14802820){
@@ -38,7 +38,7 @@ export const Web3Functions = () => {
             searchTransaction(tx, address.toLowerCase(), listOfTransactions, setListOfTransactions);
 
         setBlockNumber(n++);
-        getBlockByNumber(n, address, listOfTransactions, setListOfTransactions, setBlockNumber);
+        getBlockByNumber(setListOfTransactions, setBlockNumber, n, address, listOfTransactions);
     }
 
     return {getBlockByNumber};
