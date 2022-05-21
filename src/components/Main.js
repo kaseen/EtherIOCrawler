@@ -4,6 +4,8 @@ import {useEffect, useState} from "react";
 import {Web3Functions} from "../hooks/hookWeb3"
 import TablePagination from '@mui/material/TablePagination';
 
+import React from "react";
+
 const useStyles = makeStyles(() => ({
     wrapper: {
         width: '100%',
@@ -47,13 +49,17 @@ const useStyles = makeStyles(() => ({
 export const Main = () => {
 
     const classes = useStyles();
-    const [address, setAddress] = useState("0x33Ddd548FE3a082d753E5fE721a26E1Ab43e3598");
+    const [address, setAddress] = useState();
     const [blockNumber, setBlockNumber] = useState(0);
-    const [show, setShow] = useState(false);
     const [result, setResult] = useState(0);
     const [listOfTransactions, setListOfTransactions] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(20);
+    const [show, setShow] = useState(false);
+    const [canSearch, setCanSearch] = useState(true);
+
+    const blockRef = React.useRef(null);
+    const addressRef = React.useRef(null);
 
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, listOfTransactions.length - page * rowsPerPage);
 
@@ -68,42 +74,50 @@ export const Main = () => {
         setPage(0);
     };
 
-    // TEST
-    // 14802800 -> 14802820
     const searchButtonOnClick = () => {
+        blockRef.current.value = "";
+        addressRef.current.value = "";
         setShow(true);
-        hook.getBlockByNumber(setListOfTransactions, setBlockNumber, blockNumber, address, listOfTransactions);
+        setCanSearch(false);
+        hook.getBlockByNumber(setListOfTransactions, setBlockNumber, setCanSearch, blockNumber, address, listOfTransactions);
         setListOfTransactions([]);
-        setBlockNumber(null);
     };
     
     useEffect(() => {
         setResult(listOfTransactions.length);
-    }, [listOfTransactions])
+    }, [listOfTransactions]);
 
     return(
         <Box className={classes.wrapper}>
             <Box className={classes.box}>
                 <TextField
                     id="blockNumber"
-                    label=" "
+                    inputRef={blockRef}
                     helperText="Enter block number"
                     variant="outlined"
                     size="small"
-                    onChange={input => setBlockNumber(Number(input.target.value))}
+                    disabled={!canSearch}
+                    onChange={input => {
+                        setShow(false);
+                        setBlockNumber(Number(input.target.value));
+                    }}
                 />
                 <TextField
                     id="accountAddress"
-                    label=" "
+                    inputRef={addressRef}
                     helperText="Enter account address"
                     variant="outlined"
                     size="small"
-                    onChange={input => setAddress(input.target.value)}
+                    disabled={!canSearch}
+                    onChange={input => {
+                        setShow(false);
+                        setAddress(input.target.value.toLowerCase().toString());
+                    }}
                 />
-                <Button className={classes.button} onClick={searchButtonOnClick}>Search</Button>
+                <Button className={classes.button} disabled={!canSearch} onClick={searchButtonOnClick}>Search</Button>
             </Box>
             <Box className={classes.searchResult}>
-                {show === true ? typeof(blockNumber) === "number" ? "Currently searching in block no. " + blockNumber : "Total of " + result + " transactions." : null}
+                {show === true ? blockNumber !== 0 ? "Currently searching in block no. " + blockNumber : "Total of " + result + " transactions." : null}
             </Box>
             <Box>
                 <TableContainer className={classes.table}>
@@ -149,4 +163,4 @@ export const Main = () => {
             </Box>
         </Box>
     )
-}
+};
