@@ -32,8 +32,8 @@ const useStyles = makeStyles(() => ({
         marginBottom: '5px',
     },
     table: {
-        minWidth: 1000,
-        maxWidth: 1000,
+        minWidth: 1850,
+        maxWidth: 1850,
         backgroundColor: 'white',
         borderRadius: '10px',
         border: '1px solid black',
@@ -49,8 +49,10 @@ const useStyles = makeStyles(() => ({
 export const Main = () => {
 
     const classes = useStyles();
-    const [address, setAddress] = useState();
-    const [blockNumber, setBlockNumber] = useState(0);
+    //const [address, setAddress] = useState();
+    const [address, setAddress] = useState("0xaa7a9ca87d3694b5755f213b5d04094b8d0f0a6f");
+    //const [blockNumber, setBlockNumber] = useState(0);
+    const [blockNumber, setBlockNumber] = useState(14764437);
     const [result, setResult] = useState(0);
     const [listOfTransactions, setListOfTransactions] = useState([]);
     const [page, setPage] = useState(0);
@@ -124,9 +126,11 @@ export const Main = () => {
                     <Table size="small">
                         <TableHead>
                             <TableRow>
-                                <TableCell width="40%" align="center"><b>From</b></TableCell>
-                                <TableCell width="40%" align="center"><b>To</b></TableCell>
-                                <TableCell width="20%" align="center"><b>Value (Ether)</b></TableCell>
+                                <TableCell width="30%" align="center"><b>Transaction</b></TableCell>
+                                <TableCell width="20%" align="center"><b>From</b></TableCell>
+                                <TableCell width="20%" align="center"><b>To</b></TableCell>
+                                <TableCell width="10%" align="center"><b>Value</b></TableCell>
+                                <TableCell width="20%" align="center"><b>Token</b></TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -134,10 +138,12 @@ export const Main = () => {
                             listOfTransactions
                                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                 .map((row) => (
-                                    <TableRow key={row.txHash}>
+                                    <TableRow key={row.rowNumber}>
+                                        <TableCell>{row.txHash}</TableCell>
                                         <TableCell>{row.from}</TableCell>
                                         <TableCell>{row.to}</TableCell>
-                                        <TableCell>{row.value}</TableCell>
+                                        <TableCell align="right">{row.value}</TableCell>
+                                        <TableCell align="right">{row.token}</TableCell>
                                     </TableRow>
                                 ))
                             }
