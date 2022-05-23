@@ -1,58 +1,17 @@
-import {Box, Button, TextField, makeStyles} from "@material-ui/core";
+import React from "react";
+import {Box, Button, TextField} from "@material-ui/core";
 import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@material-ui/core";
 import {useEffect, useState} from "react";
-import {Web3Functions} from "../hooks/hookWeb3"
 import TablePagination from '@mui/material/TablePagination';
+import {Web3Functions} from "../hooks/hookWeb3"
+import {UseStyles} from "./styles/useStyles"
 
-import React from "react";
-
-const useStyles = makeStyles(() => ({
-    wrapper: {
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center'
-    },
-    box: {
-        width: '700px',
-        height: '80px',
-        display: 'flex',
-        marginTop: '15px',
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-    },
-    searchResult:{
-        height: '20px',
-        width: '500px',
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        padding: '10px',
-        marginBottom: '5px',
-    },
-    table: {
-        minWidth: 1850,
-        maxWidth: 1850,
-        backgroundColor: 'white',
-        borderRadius: '10px',
-        border: '1px solid black',
-        marginBottom: '10px'
-    },
-    button: {
-        borderRadius: '5px',
-        border: '1px solid black',
-        marginBottom: '24px'
-    }
-}))
 
 export const Main = () => {
 
-    const classes = useStyles();
-    //const [address, setAddress] = useState();
-    const [address, setAddress] = useState("0x21a31Ee1afC51d94C2eFcCAa2092aD1028285549");
-    //const [blockNumber, setBlockNumber] = useState(0);
-    const [blockNumber, setBlockNumber] = useState(14828639);
+    const classes = UseStyles();
+    const [address, setAddress] = useState();
+    const [blockNumber, setBlockNumber] = useState(0);
     const [result, setResult] = useState(0);
     const [listOfTransactions, setListOfTransactions] = useState([]);
     const [page, setPage] = useState(0);
