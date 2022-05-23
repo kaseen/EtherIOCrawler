@@ -50,9 +50,9 @@ export const Main = () => {
 
     const classes = useStyles();
     //const [address, setAddress] = useState();
-    const [address, setAddress] = useState("0xaa7a9ca87d3694b5755f213b5d04094b8d0f0a6f");
+    const [address, setAddress] = useState("0x21a31Ee1afC51d94C2eFcCAa2092aD1028285549");
     //const [blockNumber, setBlockNumber] = useState(0);
-    const [blockNumber, setBlockNumber] = useState(14764437);
+    const [blockNumber, setBlockNumber] = useState(14828639);
     const [result, setResult] = useState(0);
     const [listOfTransactions, setListOfTransactions] = useState([]);
     const [page, setPage] = useState(0);
