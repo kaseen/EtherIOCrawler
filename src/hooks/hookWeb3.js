@@ -29,7 +29,10 @@ export const Web3Functions = () => {
     }
 
     const transferMethod = (account, tx, from, token, listOfTransactions, setListOfTransactions) => {
+        // Parsing input of transaction:
+        // First 64 hex digits (after 10) is address of recipient
         const _to = "0x" + tx.input.substring(10, 10+64).substring(24).toLowerCase();
+        // Next 64 hex digits is amount of token sent
         const _value = tx.input.substring(10+64, 10+64+64);
 
         if((account !== from) && (account !== _to))
@@ -48,9 +51,14 @@ export const Web3Functions = () => {
         ]);
     };
     
+    // TODO: skip ERC-721 transferMethod
     const transferFromMethod = (account, tx, token, listOfTransactions, setListOfTransactions) => {
+        // Parsing input of transaction:
+        // First 64 hex digits (after 10) is address of sender
         const _from = "0x" + tx.input.substring(10, 10+64).substring(24).toLowerCase();
+        // Next 64 hex digits is address of recipient
         const _to = "0x" + tx.input.substring(10+64, 10+64+64).substring(24).toLowerCase();
+        // Last 64 hex digits is amount of token sent  
         const _value = tx.input.substring(10+64+64, 10+64+64+64);
 
         if((account !== _from) && (account !== _to))
@@ -68,18 +76,29 @@ export const Web3Functions = () => {
             )
         ]);
     };
-
+    
     const multicallMethod = async(account, txHash, listOfTransactions, setListOfTransactions) => {
         const x = await web3.eth.getTransactionReceipt(txHash);
-        
+
         for(const log of x.logs){
+            // Searching for keccak of Transfer(address from, address to, uint256 value)
+            // log.topics[0] is keccak hash of function
             if(log.topics[0] === ERC20TransferKeccak){
+                
+                // log.topics[1] is first argument of given function
                 let _from = "0x" + log.topics[1].substring(26).toLowerCase();
+
+                // log.topics[2] is second argument of given function
                 let _to = "0x" + log.topics[2].substring(26).toLowerCase();
-                let token = log.address.toLowerCase();
             
                 if((account !== _from) && (account !== _to))
                     continue;
+
+                // Address of token transfered
+                let token = log.address.toLowerCase();
+
+                // Amount of tokens transfered
+                let amount = log.data
                 
                 // eslint-disable-next-line
                 setListOfTransactions(listOfTransactions => [
@@ -89,7 +108,7 @@ export const Web3Functions = () => {
                         txHash,
                         _from,
                         _to,
-                        Token[token] !== undefined ? web3.utils.fromWei(log.data, parseDecimals(Token[token].decimals)) : web3.utils.fromWei(log.data, "ether"),
+                        Token[token] !== undefined ? web3.utils.fromWei(amount, parseDecimals(Token[token].decimals)) : web3.utils.fromWei(amount, "ether"),
                         Token[token] !== undefined ? Token[token].name : token
                     )
                 ]);  
@@ -101,19 +120,23 @@ export const Web3Functions = () => {
         const fromAccount = tx.from.toLowerCase();
         const toAccount = (tx.to === null) ? null : tx.to.toLowerCase();
 
-        if(tx.input !== "0x" && toAccount !== null)
+        // If transaction have input field then check first 4 bytes (8 hex characters). This hex value is
+        // derived from taking the method name and its argument types, taking keccak hash of the result.
+        if(tx.input !== "0x" && toAccount !== null){
             if(tx.input.startsWith(TRANSFER_METHOD))
 		        transferMethod(account, tx, fromAccount, toAccount, listOfTransactions, setListOfTransactions);
 		    else if(tx.input.startsWith(TRANSFER_FROM_METHOD))
 			    transferFromMethod(account, tx, toAccount, listOfTransactions, setListOfTransactions);
             else if(tx.input.startsWith(MULTICALL_METHOD))
                 multicallMethod(account, tx.hash, listOfTransactions, setListOfTransactions);
+        }
 
         const value = web3.utils.fromWei(tx.value, "ether");
 
         if(value === "0")
             return;
     
+        // If value of ETH in current transaction is not 0, check if input address matches from/to fields
         if(fromAccount === account)
             setListOfTransactions(listOfTransactions => [
                 ...listOfTransactions, 
@@ -130,6 +153,7 @@ export const Web3Functions = () => {
     const getBlockByNumber = async(setListOfTransactions, setBlockNumber, setCanSearch, n, address, listOfTransactions) => {
         const block = await web3.eth.getBlock(n, true);
    
+        // End of recursion
         if(block === null){
             rowNumber = 0;
             setCanSearch(true);
@@ -137,9 +161,11 @@ export const Web3Functions = () => {
             return;
         }
 
+        // Search every transaction in this block
         for(let tx of block.transactions)
             searchTransaction(tx, address.toLowerCase(), listOfTransactions, setListOfTransactions);
 
+        // Recursive call for next block
         setBlockNumber(n++);
         getBlockByNumber(setListOfTransactions, setBlockNumber, setCanSearch, n, address, listOfTransactions);
     };
